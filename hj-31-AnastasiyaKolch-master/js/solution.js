@@ -206,30 +206,29 @@ function sendFile(files) {
 
 // получаем информацию о файле
 function setReview(id) {
-    const xhrGetInfo = new
-);
-xhrGetInfo.open(
-    'GET',
-    `${urlApi}/pic/${id}`,
-    false
-);
-xhrGetInfo.send();
+    const xhrGetInfo = new XMLHttpRequest();
+    xhrGetInfo.open(
+        'GET',
+        `${urlApi}/pic/${id}`,
+        false
+    );
+    xhrGetInfo.send();
 
-dataGetParse = JSON.parse(xhrGetInfo.responseText);
-host = `${window.location.origin}${window.location.pathname}?id=${dataGetParse.id}`;
+    dataGetParse = JSON.parse(xhrGetInfo.responseText);
+    host = `${window.location.origin}${window.location.pathname}?id=${dataGetParse.id}`;
 
-wss();
-setcurrentImage(dataGetParse);
-burger.style.cssText = ``;
-showMenu();
+    wss();
+    setcurrentImage(dataGetParse);
+    burger.style.cssText = ``;
+    showMenu();
 
-currentImage.addEventListener('load', () => {
-    cover(loader);
-    createWrapforCanvasComment();
-    createCanvas();
-});
+    currentImage.addEventListener('load', () => {
+        cover(loader);
+        createWrapforCanvasComment();
+        createCanvas();
+    });
 
-updateCommentForm(dataGetParse.comments);
+    updateCommentForm(dataGetParse.comments);
 }
 
 burger.addEventListener('click', showMenu);
@@ -515,7 +514,7 @@ function wss() {
 }
 
 // Поделиться
-// копируем ссылку 
+// копирование ссылки 
 const copyUrl = document.querySelector('.menu_copy');
 copyUrl.addEventListener('click', function(event) {
     menuUrl.select();
@@ -590,7 +589,7 @@ function makePoint(x, y) {
     return [x, y];
 };
 
-canvas.addEventListener("mousedown", (event) => {
+canvas.addEventListener('mousedown', (event) => {
     if (!(draw.dataset.state === 'selected')) return;
     drawing = true;
 
@@ -602,15 +601,15 @@ canvas.addEventListener("mousedown", (event) => {
     needsRepaint = true;
 });
 
-canvas.addEventListener("mouseup", (event) => {
+canvas.addEventListener('mouseup', (event) => {
     drawing = false;
 });
 
-canvas.addEventListener("mouseleave", (event) => {
+canvas.addEventListener('mouseleave', (event) => {
     drawing = false;
 });
 
-canvas.addEventListener("mousemove", (event) => {
+canvas.addEventListener('mousemove', (event) => {
     if (drawing) {
         const point = makePoint(event.offsetX, event.offsetY)
         curves[curves.length - 1].push(point);
