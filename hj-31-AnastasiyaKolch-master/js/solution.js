@@ -9,7 +9,7 @@ const canvas = document.createElement('canvas');
 const currentImage = document.querySelector('.current-image');
 const loader = document.querySelector('.image-loader');
 const wrapApp = document.querySelector('.app');
-const formsComments = document.querySelector('.comments__form').cloneNode(true);
+const formComment = document.querySelector('.comments__form').cloneNode(true);
 
 let connection;
 let dataGetParse;
@@ -18,11 +18,12 @@ let currColor;
 let url = new URL(`${window.location.href}`);
 let paramId = url.searchParams.get('id');
 
+//глобальные переменные
 letInstall('error');
 letInstall('menu');
 letInstall('burger');
 
-// публикация
+// --------------Публикация-----------
 currentImage.src = ''; // убираем фон
 
 // убираем пункты меню для режима "Публикации"
@@ -43,7 +44,7 @@ wrapApp.addEventListener('dragover', event => event.preventDefault());
 //показать меню
 letInitial('burger').addEventListener('click', showMenu);
 
-//создать форму для комментариев 
+//создаem форму для комментариев при клике
 canvas.addEventListener('click', checkComment);
 
 //Показывать комментарии
@@ -67,12 +68,14 @@ Array.from(letInitial('menu').querySelectorAll('.menu__color')).forEach(color =>
     });
 });
 
+// переменные для рисования
 const ctx = canvas.getContext('2d');
 const BRUSH_RADIUS = 4;
 let curves = [];
 let drawing = false;
 let needsRepaint = false;
 
+//События
 canvas.addEventListener('mousedown', (event) => {
     if (!(letInitial('menu').querySelector('.draw').dataset.state === 'selected')) return;
     drawing = true;
@@ -148,7 +151,7 @@ function delExtension(inputText) {
     return inputText.replace(regExp, '');
 }
 
-// разбивка timestamp в строку
+// разбивка timestamp в строку для отображения времени
 function dataTime(timestamp) {
     const options = {
         day: '2-digit',
@@ -191,6 +194,7 @@ let minY, minX, maxX, maxY;
 let shiftX = 0;
 let shiftY = 0;
 
+
 function dragStart(event) {
     if (!event.target.classList.contains('drag')) { return; }
 
@@ -205,6 +209,7 @@ function dragStart(event) {
     shiftY = event.pageY - event.target.getBoundingClientRect().top - window.pageYOffset;
 }
 
+// перемещаем меню в соответствии с движением мыши, учитываем ограничения
 function drag(event) {
     if (!movedPiece) { return; }
 
@@ -218,12 +223,14 @@ function drag(event) {
     movedPiece.style.top = y + 'px';
 }
 
+// заканчиваем движение меню
 function drop(event) {
     if (movedPiece) {
         movedPiece = null;
     }
 }
 
+// используется для ограничения частоты срабатывания функции drag
 function throttle(callback) {
     let isWaiting = false;
     return function(...rest) {
@@ -334,8 +341,8 @@ function sendFile(files) {
 
 // удаление форм комментариев, при загрузке нового изображения
 function removeForm() {
-    const formsComments = wrapApp.querySelectorAll('.comments__form');
-    Array.from(formsComments).forEach(item => { item.remove() });
+    const formComment = wrapApp.querySelectorAll('.comments__form');
+    Array.from(formComment).forEach(item => { item.remove() });
 }
 
 // получаем информацию о файле
@@ -402,7 +409,6 @@ function showMenuComments() {
 // добавить фон 
 function setcurrentImage(fileInfo) {
     currentImage.src = fileInfo.url;
-
 }
 
 //скрыть комментарии
@@ -421,12 +427,14 @@ function markCheckboxOn() {
     })
 }
 
+// создание нового комментария при клике на холсте
 function checkComment(event) {
+    // проверяем, что включен режим "Комментирование" и стоит галочка "Показывать комментарии"
     if (!(letInitial('menu').querySelector('.comments').dataset.state === 'selected') || !wrapApp.querySelector('#comments-on').checked) { return; }
-    commentsWrap.appendChild(addCommentForm(event.offsetX, event.offsetY));
+    commentsWrap.appendChild(createCommentForm(event.offsetX, event.offsetY));
 }
 
-//Создаем холст для рисования	
+// задаем все атрибуты холста и вставляем его в DOM
 function createCanvas() {
     const width = getComputedStyle(wrapApp.querySelector('.current-image')).width.slice(0, -2);
     const height = getComputedStyle(wrapApp.querySelector('.current-image')).height.slice(0, -2);
@@ -442,6 +450,7 @@ function createCanvas() {
     commentsWrap.appendChild(canvas);
 }
 
+//создаем div, в который будем помещать комментарии,чтобы их координаты можно было зафиксировать относительно этого div, а не документа, чтобы комментарии не съезжали при изменении окна браузера
 function createWrapforCanvasComment() {
     const width = getComputedStyle(wrapApp.querySelector('.current-image')).width;
     const height = getComputedStyle(wrapApp.querySelector('.current-image')).height;
@@ -452,11 +461,20 @@ function createWrapforCanvasComment() {
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
-		display: block;
+		display: '';
 	`;
     wrapApp.appendChild(commentsWrap);
 
-    // отображаем комментарии 
+    // отображение комментария поверх других
+    commentsWrap.addEventListener('click', event => {
+        if (event.target.closest('form.comments__form')) {
+            Array.from(commentsWrap.querySelectorAll('form.comments__form')).forEach(form => {
+                form.style.zIndex = 2;
+            });
+            event.target.closest('form.comments__form').style.zIndex = 3;
+        }
+    });
+
     commentsWrap.addEventListener('click', event => {
         if (event.target.closest('form.comments__form')) {
             Array.from(commentsWrap.querySelectorAll('form.comments__form')).forEach(form => {
@@ -468,29 +486,58 @@ function createWrapforCanvasComment() {
 }
 
 //Форма для комментариев
-function addCommentForm(x, y) {
-    //отображение там где кликнули
+function createCommentForm(x, y) {
+
+    const formComment = document.createElement('form');
+    formComment.style.display = '';
+    formComment.style.zIndex = 10;
+    formComment.classList.add('comments__form');
+    formComment.innerHTML = `
+		<span class="comments__marker"></span><input type="checkbox" class="comments__marker-checkbox">
+		<div class="comments__body">
+			<div class="comment">
+				<div class="loader">
+					<span></span>
+					<span></span>
+					<span></span>
+					<span></span>
+					<span></span>
+				</div>
+			</div>
+			<textarea class="comments__input" type="text" placeholder="Напишите ответ..."></textarea>
+			<input class="comments__close" type="button" value="Закрыть">
+			<input class="comments__submit" type="submit" value="Отправить">
+        </div>`;
+
+    //отображение маркера,там где кликнули
     const left = x - 22;
     const top = y - 14;
 
-    formsComments.style.cssText = `
+    formComment.style.cssText = `
 		top: ${top}px;
 		left: ${left}px;
-		z-index: 2;
+        z-index: 2; 
+        display: ''
 	`;
-    formsComments.dataset.left = left;
-    formsComments.dataset.top = top;
+    formComment.dataset.left = left;
+    formComment.dataset.top = top;
+    formComment.querySelector('.comments__body').style.display = '';
 
-    cover(formsComments.querySelector('.loader').parentElement);
+    cover(formComment.querySelector('.loader').parentElement);
 
-    //закрыть
-    formsComments.querySelector('.comments__close').addEventListener('click', () => {
-        formsComments.querySelector('.comments__marker-checkbox').checked = false;
+    // formComment.querySelector('comments__marker').addEventListener('click', () => {
+    //     formComment.querySelector('.comments__body').style.display = '';
+    // });
+
+
+    // кнопка закрыть
+    formComment.querySelector('.comments__close').addEventListener('click', () => {
+        formComment.querySelector('.comments__marker-checkbox').checked = false;
     });
 
-    //отправить
-    formsComments.addEventListener('submit', messageSend);
-    formsComments.querySelector('.comments__input').addEventListener('keydown', keySendMessage);
+    //кнопка отправить
+    formComment.addEventListener('submit', messageSend);
+    formComment.querySelector('.comments__input').addEventListener('keydown', keySendMessage);
 
     // Отправляем комментарий по нажатию Ctrl + Enter
     function keySendMessage(event) {
@@ -508,11 +555,11 @@ function addCommentForm(x, y) {
         if (event) {
             event.preventDefault();
         }
-        const message = formsComments.querySelector('.comments__input').value;
+        const message = formComment.querySelector('.comments__input').value;
         const messageSend = `message=${encodeURIComponent(message)}&left=${encodeURIComponent(left)}&top=${encodeURIComponent(top)}`;
         commentsSend(messageSend);
-        showElement(formsComments.querySelector('.loader').parentElement);
-        formsComments.querySelector('.comments__input').value = '';
+        showElement(formComment.querySelector('.loader').parentElement);
+        formComment.querySelector('.comments__input').value = '';
     }
 
     function commentsSend(message) {
@@ -532,11 +579,11 @@ function addCommentForm(x, y) {
             .then(res => res.json())
             .catch(er => {
                 console.log(er);
-                formsComments.querySelector('.loader').parentElement.style.display = 'none';
+                formComment.querySelector('.loader').parentElement.style.display = 'none';
             });
     }
 
-    return formsComments;
+    return formComment;
 }
 
 //Добавление комментария в форму
@@ -560,6 +607,7 @@ function addMessageComment(message, form) {
     form.querySelector('.comments__body').insertBefore(newMessageDiv, parentLoaderDiv);
 }
 
+//отображение комментариев с сервера
 function updateCommentForm(newComment) {
     if (!newComment) return;
     Object.keys(newComment).forEach(id => {
@@ -569,16 +617,17 @@ function updateCommentForm(newComment) {
         let needCreateNewForm = true;
 
         Array.from(wrapApp.querySelectorAll('.comments__form')).forEach(form => {
-            //добавляем сообщение в форму
+            // если уже существует форма с заданными координатами left и top, добавляем сообщение в эту форму
             if (+form.dataset.left === showComments[id].left && +form.dataset.top === showComments[id].top) {
                 form.querySelector('.loader').parentElement.style.display = 'none';
+                // добавляем в эту форму сообщение
                 addMessageComment(newComment[id], form);
                 needCreateNewForm = false;
             }
         });
-
+        // если формы с заданными координатами пока нет на холсте, создаем эту форму и добавляем в нее сообщение
         if (needCreateNewForm) {
-            const newForm = addCommentForm(newComment[id].left + 22, newComment[id].top + 14);
+            const newForm = createCommentForm(newComment[id].left + 22, newComment[id].top + 14);
             newForm.dataset.left = newComment[id].left;
             newForm.dataset.top = newComment[id].top;
             newForm.style.left = newComment[id].left + 'px';
@@ -586,12 +635,13 @@ function updateCommentForm(newComment) {
             commentsWrap.appendChild(newForm);
             addMessageComment(newComment[id], newForm);
             if (!wrapApp.querySelector('#comments-on').checked) {
-                newForm.style.display = 'none';
+                newForm.style.display = '';
             }
         }
     });
 }
 
+// обработка комментария, пришедшего через вэбсокет (преобразуем к тому же формату, что приходит по AJAX)
 function insertWssCommentForm(wssComment) {
     const wsCommentEdited = {};
     wsCommentEdited[wssComment.id] = {};
@@ -631,18 +681,23 @@ function urlId(id) {
     showMenuComments();
 }
 
-// Рисование
+//---------------Рисование-------------------
+// --- кривые и фигуры ---
+
+// рисуем точку
 function circle(point) {
     ctx.beginPath();
     ctx.arc(...point, BRUSH_RADIUS / 2, 0, 2 * Math.PI);
     ctx.fill();
 }
 
+// рисуем плавную линию между двумя точками
 function smoothCurveBetween(p1, p2) {
     const cp = p1.map((coord, idx) => (coord + p2[idx]) / 2);
     ctx.quadraticCurveTo(...p1, ...cp);
 }
 
+// рисуем плавную линию между множеством точек
 function smoothCurve(points) {
     ctx.beginPath();
     ctx.lineWidth = BRUSH_RADIUS;
@@ -657,11 +712,13 @@ function smoothCurve(points) {
     ctx.stroke();
 }
 
+// задаем координаты точки в виде массива
 function makePoint(x, y) {
     return [x, y];
 }
 
 function repaint() {
+    // очищаем перед перерисовкой
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     curves.forEach((curve) => {
         ctx.strokeStyle = curve.color;
@@ -681,6 +738,7 @@ function sendMaskState() {
     });
 }
 
+// проверяем и при необходимости перерисовываем холст в каждый AnimationFrame
 function tick() {
     if (letInitial('menu').offsetHeight > 66) {
         letInitial('menu').style.left = (wrapApp.offsetWidth - letInitial('menu').offsetWidth) - 10 + 'px';
