@@ -504,7 +504,7 @@ function createCommentForm(x, y) {
     formComment.innerHTML = `
 		<span class="comments__marker"></span><input type="checkbox" checked class="comments__marker-checkbox">
 		<div class="comments__body">
-			<div class="comment comment_loader">
+			<div class="comment comment__loader">
 				<div class="loader">
 					<span></span>
 					<span></span>
@@ -531,10 +531,7 @@ function createCommentForm(x, y) {
     formComment.dataset.left = left;
     formComment.dataset.top = top;
 
-
     cover(formComment.querySelector('.loader').parentElement);
-
-
 
     // кнопка закрыть
     formComment.querySelector('.comments__close').addEventListener('click', () => {
