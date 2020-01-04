@@ -485,17 +485,26 @@ function createWrapforCanvasComment() {
     });
 }
 
+function removeEmptyForms() {
+    const forms = document.querySelectorAll('.comments__form');
+    forms.forEach(form => {
+        if (!form.querySelector('.comment:not(.comment__loader)') && form.querySelector('.comment__loader').style.display === 'none') {
+            form.remove();
+        }
+    });
+}
+
 //Форма для комментариев
 function createCommentForm(x, y) {
-
+    removeEmptyForms();
     const formComment = document.createElement('form');
     formComment.style.display = '';
     formComment.style.zIndex = 10;
     formComment.classList.add('comments__form');
     formComment.innerHTML = `
-		<span class="comments__marker"></span><input type="checkbox" class="comments__marker-checkbox">
+		<span class="comments__marker"></span><input type="checkbox" checked class="comments__marker-checkbox">
 		<div class="comments__body">
-			<div class="comment">
+			<div class="comment comment_loader">
 				<div class="loader">
 					<span></span>
 					<span></span>
@@ -521,13 +530,10 @@ function createCommentForm(x, y) {
 	`;
     formComment.dataset.left = left;
     formComment.dataset.top = top;
-    formComment.querySelector('.comments__body').style.display = '';
+
 
     cover(formComment.querySelector('.loader').parentElement);
 
-    // formComment.querySelector('comments__marker').addEventListener('click', () => {
-    //     formComment.querySelector('.comments__body').style.display = '';
-    // });
 
 
     // кнопка закрыть
@@ -616,7 +622,7 @@ function updateCommentForm(newComment) {
         showComments[id] = newComment[id];
         let needCreateNewForm = true;
 
-        Array.from(wrapApp.querySelectorAll('.comments__form')).forEach(form => {
+        Array.from(commentsWrap.querySelectorAll('.comments__form')).forEach(form => {
             // если уже существует форма с заданными координатами left и top, добавляем сообщение в эту форму
             if (+form.dataset.left === showComments[id].left && +form.dataset.top === showComments[id].top) {
                 form.querySelector('.loader').parentElement.style.display = 'none';
