@@ -474,17 +474,9 @@ function createWrapforCanvasComment() {
             event.target.closest('form.comments__form').style.zIndex = 3;
         }
     });
-
-    commentsWrap.addEventListener('click', event => {
-        if (event.target.closest('form.comments__form')) {
-            Array.from(commentsWrap.querySelectorAll('form.comments__form')).forEach(form => {
-                form.style.zIndex = 2;
-            });
-            event.target.closest('form.comments__form').style.zIndex = 3;
-        }
-    });
 }
 
+//при создании новой формы для комментария, удаляем все пустые 
 function removeEmptyForms() {
     const forms = document.querySelectorAll('.comments__form');
     forms.forEach(form => {
@@ -494,9 +486,16 @@ function removeEmptyForms() {
     });
 }
 
+// сворачиваем формы с добавленными комментариями, присоздании новой формы
+function closeAllForms() {
+    const checkboxes = document.querySelectorAll('.comments__marker-checkbox');
+    checkboxes.forEach(checkboxes => checkboxes.checked = false);
+}
+
 //Форма для комментариев
 function createCommentForm(x, y) {
     removeEmptyForms();
+    closeAllForms();
     const formComment = document.createElement('form');
     formComment.style.display = '';
     formComment.style.zIndex = 10;
